@@ -9,7 +9,6 @@ char pass[] = "12345678";
 
 char output_string[80];
 
-
 int wifi_status = WL_IDLE_STATUS;
 char server[] = "192.168.1.2";    // IP-address or domain for target destination.
 
