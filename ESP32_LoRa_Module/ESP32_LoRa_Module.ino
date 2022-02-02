@@ -104,8 +104,7 @@ void loop()
          Heltec.display->display();
 
       // Data
-      String queryString = String("user=") + String("1") +
-                           String("&station=") + String("1") +
+      String queryString = String("station=") + String("1") +
                            String("&average_wind_speed=") + String("12") + 
                            String("&gust_wind_speed=") + String("13") +
                            String("&wind_direction=") + String("180") + 
