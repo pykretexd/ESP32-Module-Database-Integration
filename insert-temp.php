@@ -1,5 +1,18 @@
 <?PHP
-    include_once("./lib/rx-lib-database.php");
+    // Connect to database
+    $db_host = "127.0.0.1";
+    $db_name = "agrilog";
+    $db_port = "5432";
+    $db_user = "postgres";
+    $db_pass = "ntig123!";
+
+    $con = pg_connect("hostaddr=$db_host port=$db_port dbname=$db_name user=$db_user password=$db_pass");
+    // $pdo = new PDO("pgsql:hostaddr=$db_host port=$db_port dbname=$db_name user=$db_user password=$db_pass");
+
+    if (!$con)
+    {
+        printf("<p>No database connection</p>");
+    }
 
     function rx_log($message)
     {
@@ -9,21 +22,16 @@
     $method = $_SERVER['REQUEST_METHOD'];
     $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 
-    $user = (int) $_REQUEST['user'];
-    $station = (int) $_REQUEST['station'];
-    $average_wind_speed = (int) $_REQUEST['average_wind_speed'];
-    $gust_wind_speed = (int) $_REQUEST['gust_wind_speed'];
-    $wind_direction = (int) $_REQUEST['wind_direction'];
-    $rainfall = (int) $_REQUEST['rainfall'];
-    $temperature = (int) $_REQUEST['temperature'];
-    $humidity = (int) $_REQUEST['humidity'];
-    $light = (int) $_REQUEST['light'];
-    $uvi = (int) $_REQUEST['uvi'];
+    $sql = sprintf("INSERT INTO public.measurements (station, average_wind_speed, gust_wind_speed, wind_direction, rainfall, temperature, humidity, light, uvi) 
+                        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9);");
     
-    $query = sprintf("INSERT INTO public.measurements (user, station, average_wind_speed, gust_wind_speed, wind_direction, rainfall, temperature, humidity, light, uvi) 
-    VALUES ($user, $station, $average_wind_speed, $gust_wind_speed, $wind_direction, $rainfall, $temperature, $humidity, $light, $uvi);");
+    $result = pg_query_params($con, $sql, array((int) $_REQUEST['station'], (int) $_REQUEST['average_wind_speed'], (int) $_REQUEST['gust_wind_speed'], (int) $_REQUEST['wind_direction'], (int) $_REQUEST['rainfall'], (int) $_REQUEST['temperature'], (int) $_REQUEST['humidity'], (int) $_REQUEST['light'], (int) $_REQUEST['uvi']));
 
-    rx_log("Query: " . $query);
+    /* $result = pg_prepare($con, 'insert', $sql);
+    $result = pg_execute($con, 'insert', array((int) $_REQUEST['user'], (int) $_REQUEST['station'], (int) $_REQUEST['average_wind_speed'], (int) $_REQUEST['gust_wind_speed'], (int) $_REQUEST['wind_direction'], (int) $_REQUEST['rainfall'], (int) $_REQUEST['temperature'], (int) $_REQUEST['humidity'], (int) $_REQUEST['light'], (int) $_REQUEST['uvi'])); */
+    /* $sth = $pdo->prepare($sql);
+    $sth->execute();
+    $result = $sth->fetchAll();*/
 
-    rx_db_insert($query);
+    rx_log("Query: " . $sql);
 ?>
