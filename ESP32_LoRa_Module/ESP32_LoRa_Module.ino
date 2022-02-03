@@ -39,11 +39,7 @@ void LoRaData() {
   Heltec.display->setFont(ArialMT_Plain_10);
   //Heltec.display->drawStringMaxWidth(0 , 26 , 128, packet);
 
-<<<<<<< Updated upstream
-  if ( packetSize == 15 )
-=======
   if (packetSize == 15)
->>>>>>> Stashed changes
   {
     Heltec.display->drawString(0 , 15 , "Received " + packSize + " bytes");
     Heltec.display->drawString(0 , 26 , "Weather:");
@@ -125,7 +121,6 @@ void setup()
   {
          Heltec.display->clear();
          Heltec.display->drawString(0, 0, "Connected to Wifi");
-         Heltec.display->drawString(0, 10, "Waiting for incoming data...");
          Heltec.display->display();
          delay(500);
   }
@@ -138,24 +133,12 @@ void setup()
 void loop()
 {
   packetSize = LoRa.parsePacket();
-<<<<<<< Updated upstream
-  
-  if (client.connect(server, 8085) && packetSize) 
-    {
-         Heltec.display->clear();
-         Heltec.display->drawString(0, 0, "Port 8085 agrilog");
-         Heltec.display->display();
-=======
->>>>>>> Stashed changes
 
   if (packetSize == 15) {
     cbk(packetSize);
     if (client.connect(server, 8085)) 
     {
       // Data
-<<<<<<< Updated upstream
-      String queryString = String("byte=") + String(packetSize);
-=======
       String queryString = String("byte=") + String(packet[0]) + 
                                              String(packet[1]) + 
                                              String(packet[2]) + 
@@ -171,7 +154,6 @@ void loop()
                                              String(packet[12]) + 
                                              String(packet[13]) + 
                                              String(packet[14]);
->>>>>>> Stashed changes
 
       // Send to server through a HTTP POST request.
       client.println("POST /agrilog-server/insert-byte.php HTTP/1.1");
@@ -181,19 +163,10 @@ void loop()
       client.println("Content-Length: " + String(queryString.length()));
       client.println(); // end HTTP header
       client.println(queryString);
-<<<<<<< Updated upstream
-
-      if (packetSize) {
-        cbk(packetSize);
-      }
-
-      delay(10000);
-=======
     } else {
       Heltec.display->clear();
       Heltec.display->drawString(0, 0, "Couldn't connect to server.");
       Heltec.display->display();
->>>>>>> Stashed changes
     }
   }  
 }
