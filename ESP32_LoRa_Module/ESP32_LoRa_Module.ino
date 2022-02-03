@@ -10,7 +10,8 @@ char pass[] = "12345678";
 char output_string[80];
 
 int wifi_status = WL_IDLE_STATUS;
-char server[] = "192.168.1.2";    // IP-address or domain for target destination.
+ // IP-address or domain for target destination.
+char server[] = "192.168.1.2"; 
 
 #define BAND 433920000
 #define PABOOST false
@@ -37,13 +38,11 @@ void LoRaData() {
   Heltec.display->clear();
   Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
   Heltec.display->setFont(ArialMT_Plain_10);
-  //Heltec.display->drawStringMaxWidth(0 , 26 , 128, packet);
-
+  
   if (packetSize == 15)
   {
     Heltec.display->drawString(0 , 15 , "Received " + packSize + " bytes");
     Heltec.display->drawString(0 , 26 , "Weather:");
-    //Heltec.display->drawString(0 , 37 , "Weather:");
     for ( int i = 0; i < 15; i++)
     {
       Heltec.display->drawString(i * 6, 37, String(packet[i], HEX));
@@ -85,7 +84,6 @@ void setup()
   delay(1500);
 
   LoRa.setFrequency(433920000);
-  //LoRa.setSyncWord(0xF3);
   LoRa.setSyncWord(0x34);
   LoRa.setSpreadingFactor(7);
   LoRa.setCodingRate4(5);
@@ -97,32 +95,29 @@ void setup()
   while (wifi_status != WL_CONNECTED)
   {
     static int counter = 0;
-
-          sprintf(output_string, "Attempts to connect: %d", counter++);
-          Heltec.display->clear();
-          Heltec.display->drawString(0, 0, output_string);
-          Heltec.display->display();
-          wifi_status = WiFi.begin(ssid, pass);
-
-    // Wait 5 sec
+    sprintf(output_string, "Attempts to connect: %d", counter++);
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, output_string);
+    Heltec.display->display();
+    wifi_status = WiFi.begin(ssid, pass);
     delay(5000);
   }
   
   // Check if connection failed.
   if (wifi_status != WL_CONNECTED) 
   {
-        
-         Heltec.display->clear();
-         Heltec.display->drawString(0, 0, "Could not connect to WiFi");
-         Heltec.display->display();
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, "Could not connect to WiFi");
+    Heltec.display->display();
  
   }
   else 
   {
-         Heltec.display->clear();
-         Heltec.display->drawString(0, 0, "Connected to Wifi");
-         Heltec.display->display();
-         delay(500);
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, "Connected to Wifi");
+    Heltec.display->drawString(0, 10, "Waiting for incoming data...");
+    Heltec.display->display();
+    delay(1000);
   }
   Heltec.display->clear();
   Heltec.display->drawString(0, 0, "Waiting for incoming data...");
