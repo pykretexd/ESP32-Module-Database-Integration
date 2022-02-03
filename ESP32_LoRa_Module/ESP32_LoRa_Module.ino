@@ -35,10 +35,6 @@ void logo() {
 }
 
 void LoRaData() {
-  Heltec.display->clear();
-  Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
-  Heltec.display->setFont(ArialMT_Plain_10);
-  
   if (packetSize == 15)
   {
     Heltec.display->drawString(0 , 15 , "Received " + packSize + " bytes");
