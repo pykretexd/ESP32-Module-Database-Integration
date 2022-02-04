@@ -5,12 +5,18 @@
 // Network SSID
 char ssid[] = "Agrilog";
 // Network Pass
-char pass[] = "12345678";         
+char pass[] = "12345678";
 
-char output_string[80];
+char outputString[80];
 
 int wifi_status = WL_IDLE_STATUS;
-char server[] = "192.168.1.2";    // IP-address or domain for target destination.
+<<<<<<< Updated upstream
+ // IP-address or domain for target destination.
+char server[] = "192.168.1.2"; 
+=======
+// IP-address or domain for target destination.
+char server[] = "192.168.1.2";
+>>>>>>> Stashed changes
 
 #define BAND 433920000
 #define PABOOST false
@@ -33,6 +39,41 @@ void logo() {
   Heltec.display->display();
 }
 
+<<<<<<< Updated upstream
+void LoRaData() {
+  if (packetSize == 15)
+  {
+    Heltec.display->drawString(0 , 15 , "Received " + packSize + " bytes");
+    Heltec.display->drawString(0 , 26 , "Weather:");
+    for ( int i = 0; i < 15; i++)
+    {
+      Heltec.display->drawString(i * 6, 37, String(packet[i], HEX));
+      i++;
+    }
+
+    int device = packet[1] >> 4;
+    uint16_t temp = lowByte(packet[8]) << 8 + packet[9];
+    Heltec.display->drawString(0, 48, "." + String(device, HEX) + "." + String(packet[3], DEC) + "." + String(temp, DEC));
+  } else
+  {
+    Heltec.display->drawString(0 , 26 , "Other packet...:");
+  }
+  Heltec.display->drawString(0, 0, rssi);
+  Heltec.display->display();
+}
+
+void cbk(int packetSize) {
+  packet = "";
+  packSize = String(packetSize, DEC);
+  for (int i = 0; i < packetSize; i++) {
+    packet += (char) LoRa.read();
+  }
+  rssi = "RSSI " + String(LoRa.packetRssi(), DEC) ;
+  LoRaData();
+}
+
+=======
+>>>>>>> Stashed changes
 // Initialize the client library
 WiFiClient client;
 
@@ -46,90 +87,158 @@ void setup()
   logo();
   delay(1500);
 
-  LoRa.setFrequency( 433920000 );
-  //LoRa.setSyncWord(0xF3);
+  LoRa.setFrequency(433920000);
   LoRa.setSyncWord(0x34);
   LoRa.setSpreadingFactor(7);
   LoRa.setCodingRate4(5);
-  LoRa.setSignalBandwidth( 500000 );
-  LoRa.setPreambleLength( 6 );
+  LoRa.setSignalBandwidth(500000);
+  LoRa.setPreambleLength(6);
   LoRa.enableCrc();
 
-  // Initialization success
-  Heltec.display->clear();
-  Heltec.display->drawString(0, 0, "Heltec.LoRa Initial success!");
-  Heltec.display->drawString(0, 10, "Wait for incoming data...");
-  Heltec.display->display();
-  
-  delay(1000);
-
   // Attempt to connect to WiFi.
-  while( wifi_status != WL_CONNECTED )
+  while (wifi_status != WL_CONNECTED)
   {
     static int counter = 0;
-
-          sprintf(output_string, "Attempts: %d", counter++);
-          Heltec.display->clear();
-          Heltec.display->drawString(0, 0, output_string);
-          Heltec.display->display();
-          wifi_status = WiFi.begin(ssid, pass);
-
-    // Wait 5 sec
+<<<<<<< Updated upstream
+    sprintf(output_string, "Attempts to connect: %d", counter++);
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, output_string);
+=======
+    sprintf(outputString, "Attempts to connect: %d", counter++);
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, outputString);
+>>>>>>> Stashed changes
+    Heltec.display->display();
+    wifi_status = WiFi.begin(ssid, pass);
     delay(5000);
   }
-  
+
   // Check if connection failed.
-  if ( wifi_status != WL_CONNECTED) 
+<<<<<<< Updated upstream
+  if (wifi_status != WL_CONNECTED) 
   {
-        
-         Heltec.display->clear();
-         Heltec.display->drawString(0, 0, "Could not connect to WiFi");
-         Heltec.display->display();
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, "Could not connect to WiFi");
+    Heltec.display->display();
  
   }
   else 
   {
-         Heltec.display->clear();
-         Heltec.display->drawString(0, 0, "Connected to Wifi");
-         Heltec.display->display();
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, "Connected to Wifi");
+    Heltec.display->drawString(0, 10, "Waiting for incoming data...");
+    Heltec.display->display();
+    delay(1000);
+=======
+  if (wifi_status != WL_CONNECTED)
+  {
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, "Could not connect to WiFi");
+    Heltec.display->display();
+
+  } else {
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, "Connected to Wifi");
+    Heltec.display->display();
+>>>>>>> Stashed changes
   }
+  delay(1000);
+  LoRa.receive();
+  Heltec.display->clear();
+  Heltec.display->drawString(0, 0, "Waiting for incoming data...");
+  Heltec.display->display();
+  
 }
 
 void loop()
 {
-  if (client.connect(server, 8085)) 
-    {
-         Heltec.display->clear();
-         Heltec.display->drawString(0, 0, "Port 8085 agrilog");
-         Heltec.display->display();
+  packetSize = LoRa.parsePacket();
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
+  if (packetSize == 15) {
+    Heltec.display->clear();
+    rssi = "RSSI " + String(LoRa.packetRssi(), DEC);
+    Heltec.display->drawString(0, 0, rssi);
+    Heltec.display->drawString(0, 15, "Received packet:");
+
+    byte buffer[packetSize];
+    packet.getBytes(buffer, packetSize);
+      
+    while (LoRa.available()) {
+      for (int i = 0; i < packetSize; i++) {
+        packet += (char) LoRa.read();
+      }
+      for (int i = 0; i < 16; i++) {
+          Heltec.display->drawString(i * 6, 26, String(packet[i], HEX));
+          i++;
+        }
+      Serial.println("END OF PACKET");
+      Heltec.display->display();
+    }
+    while (client.connect(server, 8085))
+    {
       // Data
-      String queryString = String("station=") + String("1") +
-                           String("&average_wind_speed=") + String("12") + 
-                           String("&gust_wind_speed=") + String("13") +
-                           String("&wind_direction=") + String("180") + 
-                           String("&rainfall=") + String("101") +
-                           String("&temperature=") + String("41") +
-                           String("&humidity=") + String("31") +
-                           String("&light=") + String("13") +
-                           String("&uvi=") + String("5");
+<<<<<<< Updated upstream
+      String queryString = String("byte=") + String(packet[0]) + 
+                                             String(packet[1]) + 
+                                             String(packet[2]) + 
+                                             String(packet[3]) + 
+                                             String(packet[4]) + 
+                                             String(packet[5]) + 
+                                             String(packet[6]) + 
+                                             String(packet[7]) + 
+                                             String(packet[8]) + 
+                                             String(packet[9]) + 
+                                             String(packet[10]) + 
+                                             String(packet[11]) + 
+                                             String(packet[12]) + 
+                                             String(packet[13]) + 
+                                             String(packet[14]);
+=======
+      String queryString = String("byte=") + String(packet[0], HEX) + "." +
+                                             String(packet[1], HEX) + "." +
+                                             String(packet[2], HEX) + "." +
+                                             String(packet[3], HEX) + "." +
+                                             String(packet[4], HEX) + "." +
+                                             String(packet[5], HEX) + "." +
+                                             String(packet[6], HEX) + "." +
+                                             String(packet[7], HEX) + "." +
+                                             String(packet[8], HEX) + "." +
+                                             String(packet[9], HEX) + "." +
+                                             String(packet[10], HEX) + "." +
+                                             String(packet[11], HEX) + "." +
+                                             String(packet[12], HEX) + "." +
+                                             String(packet[13], HEX) + "." +
+                                             String(packet[14], HEX) +
+                           String("&device_uuid=") + String("27c6e815-b714-4ae8-93fd-53db35069a2a");
+>>>>>>> Stashed changes
 
       // Send to server through a HTTP POST request.
-      client.println("POST /agrilog-server/insert-temp.php HTTP/1.1");
+      client.println("POST /agrilog-server/insert-byte.php HTTP/1.1");
       client.println("Host: 192.168.1.2:8085");
       client.println("Connection: Keep-Alive");
       client.println("Content-Type: application/x-www-form-urlencoded");
       client.println("Content-Length: " + String(queryString.length()));
       client.println(); // end HTTP header
-
       client.println(queryString);
-
-      // Confirm connection.
+<<<<<<< Updated upstream
+    } else {
       Heltec.display->clear();
-      Heltec.display->drawString(0, 0, "Connection established.");
-      Heltec.display->drawString(0, 10, "Sending packets...");
+      Heltec.display->drawString(0, 0, "Couldn't connect to server.");
+      Heltec.display->display();
+=======
+      for (int i = 0; i < packetSize + 1; i++) {
+        Serial.println(buffer[i], HEX);
+      }
+      Serial.println("Packet sent.");   
+
+      Heltec.display->drawString(0, 48, "Packet sent.");
       Heltec.display->display();
 
-      delay(10000);
+      delay(300000);
+>>>>>>> Stashed changes
     }
+  }
 }
