@@ -113,22 +113,16 @@ void loop()
     while (client.connect(server, 8085))
     {
       // Data
-      String queryString = String("byte=") + String(packet[0], HEX) + "." +
-                                             String(packet[1], HEX) + "." +
-                                             String(packet[2], HEX) + "." +
-                                             String(packet[3], HEX) + "." +
-                                             String(packet[4], HEX) + "." +
-                                             String(packet[5], HEX) + "." +
-                                             String(packet[6], HEX) + "." +
-                                             String(packet[7], HEX) + "." +
-                                             String(packet[8], HEX) + "." +
-                                             String(packet[9], HEX) + "." +
-                                             String(packet[10], HEX) + "." +
-                                             String(packet[11], HEX) + "." +
-                                             String(packet[12], HEX) + "." +
-                                             String(packet[13], HEX) + "." +
-                                             String(packet[14], HEX) +
-                           String("&device_uuid=") + String("27c6e815-b714-4ae8-93fd-53db35069a2a");
+      String queryString = String("device=") + String(packet[0], HEX) +
+                           String("&station_id=") + String(packet[2], HEX) +
+                           String("&average_wind_speed=") + String(packet[3], DEC) +
+                           String("&gust_wind_speed=") + String(packet[4], DEC) +
+                           String("&wind_direction=") + String(packet[5], DEC) +
+                           String("&rainfall=") + String(packet[6], DEC) + String(packet[7], DEC) +
+                           String("&temperature=") + String(packet[8], HEX) + String(packet[9], HEX) +
+                           String("&humidity=") + String(packet[10], HEX) +
+                           String("&light=") + String(packet[11], DEC) + String(packet[12], DEC) +
+                           String("&uvi=") + String(packet[13], DEC);
 
       // Send to server through a HTTP POST request.
       client.println("POST /agrilog-server/insert-byte.php HTTP/1.1");
