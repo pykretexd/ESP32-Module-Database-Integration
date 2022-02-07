@@ -20,9 +20,25 @@
     $method = $_SERVER['REQUEST_METHOD'];
     $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 
-    $sql = sprintf("INSERT INTO public.bytes (byte, device_uuid) VALUES ($1, $2);");
-    
-    $result = pg_query_params($con, $sql, array($_REQUEST['byte'], $_REQUEST['device_uuid']));
+    $sql = sprintf("INSERT INTO public.measurements (station_id, average_wind_speed, gust_wind_speed, wind_direction, rainfall, temperature, humidity, light, uvi) VALUES ((SELECT id FROM public.stations WHERE sid=$1), $2, $3, $4, $5, $6, $7, $8, $9);");
 
-    rx_log("TEST: " . $sql . $_REQUEST['byte']);
+    $result = pg_query_params($con, $sql, array($_REQUEST['station_id'],
+                                                $_REQUEST['average_wind_speed'],
+                                                $_REQUEST['gust_wind_speed'],
+                                                $_REQUEST['wind_direction'],
+                                                $_REQUEST['rainfall'],
+                                                $_REQUEST['temperature'],
+                                                $_REQUEST['humidity'],
+                                                $_REQUEST['light'],
+                                                $_REQUEST['uvi']));
+
+    rx_log($sql . $_REQUEST['station_id'] .
+                  $_REQUEST['average_wind_speed'] . ", " .
+                  $_REQUEST['gust_wind_speed'] . ", " .
+                  $_REQUEST['wind_direction'] . ", " .
+                  $_REQUEST['rainfall'] . ", " .
+                  $_REQUEST['temperature'] . ", " .
+                  $_REQUEST['humidity'] . ", " .
+                  $_REQUEST['light'] . ", " .
+                  $_REQUEST['uvi'] . "(unrelated): " . $_REQUEST['device'] );
 ?>
