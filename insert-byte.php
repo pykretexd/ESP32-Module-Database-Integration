@@ -20,9 +20,9 @@
     $method = $_SERVER['REQUEST_METHOD'];
     $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 
-    $sql = sprintf("INSERT INTO public.bytes (byte) VALUES ($1);");
+    $sql = sprintf("INSERT INTO public.bytes (byte, device_uuid) VALUES ($1, $2);");
     
-    $result = pg_query_params($con, $sql, array($_REQUEST['byte']));
+    $result = pg_query_params($con, $sql, array($_REQUEST['byte'], $_REQUEST['device_uuid']));
 
-    rx_log("TEST: " . $sql);
+    rx_log("TEST: " . $sql . $_REQUEST['byte']);
 ?>
