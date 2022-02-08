@@ -24,7 +24,7 @@ char server[] = "192.168.1.2";
 
 String rssi = "RSSI --";
 String packSize = "--";
-String packet ;
+String packet;
 
 int packetSize;
 
@@ -44,9 +44,6 @@ void setup()
   Heltec.display->init();
   Heltec.display->flipScreenVertically();
   Heltec.display->setFont(ArialMT_Plain_10);
-  logo();
-  delay(1500);
-
   LoRa.setFrequency(433920000);
   LoRa.setSyncWord(0x34);
   LoRa.setSpreadingFactor(7);
@@ -71,7 +68,7 @@ void setup()
   if (wifi_status != WL_CONNECTED)
   {
     Heltec.display->clear();
-    Heltec.display->drawString(0, 0, "Could not connect to WiFi");
+    Heltec.display->drawString(0, 0, "Couldn't connect to WiFi");
     Heltec.display->display();
 
   } else {
@@ -79,52 +76,51 @@ void setup()
     Heltec.display->drawString(0, 0, "Connected to Wifi");
     Heltec.display->display();
   }
-  delay(1000);
-  LoRa.receive();
   Heltec.display->clear();
   Heltec.display->drawString(0, 0, "Waiting for incoming data...");
   Heltec.display->display();
   
+  LoRa.receive();
 }
 
 void loop()
 {
   packetSize = LoRa.parsePacket();
+
+  // Packet received
   if (packetSize == 15) {
     Heltec.display->clear();
     rssi = "RSSI " + String(LoRa.packetRssi(), DEC);
     Heltec.display->drawString(0, 0, rssi);
     Heltec.display->drawString(0, 15, "Received packet:");
 
-    byte buffer[packetSize];
-    packet.getBytes(buffer, packetSize);
-      
-    while (LoRa.available()) {
-      for (int i = 0; i < packetSize; i++) {
-        packet += (char) LoRa.read();
-      }
-      for (int i = 0; i < 16; i++) {
-          Heltec.display->drawString(i * 6, 26, String(packet[i], HEX));
-          i++;
-        }
-      Serial.println("END OF PACKET");
-      Heltec.display->display();
+    // Display packet
+    for (int i = 0; i < packetSize; i++) {
+      packet += (char) LoRa.read();
     }
-    while (client.connect(server, 8085))
+    for (int i = 0; i < 16; i++) {
+      Heltec.display->drawString(i * 6, 26, String(packet[i], HEX));
+      i++;
+    }
+    
+    Heltec.display->display();
+
+    // Connect to server
+    if (client.connect(server, 8085))
     {
-      // Data
+      // Data to input
       String queryString = String("device=") + String(packet[0], HEX) +
-                           String("&station_id=") + String(packet[2], HEX) +
+                           String("&station_name=") + String(packet[2], HEX) +
                            String("&average_wind_speed=") + String(packet[3], DEC) +
                            String("&gust_wind_speed=") + String(packet[4], DEC) +
                            String("&wind_direction=") + String(packet[5], DEC) +
-                           String("&rainfall=") + String(packet[6], DEC) + String(packet[7], DEC) +
-                           String("&temperature=") + String(packet[8], HEX) + String(packet[9], HEX) +
+                           String("&rainfall=") + String(packet[6], HEX) + String(packet[7], HEX) +
+                           String("&temperature=") + String(packet[9], DEC) +
                            String("&humidity=") + String(packet[10], HEX) +
-                           String("&light=") + String(packet[11], DEC) + String(packet[12], DEC) +
-                           String("&uvi=") + String(packet[13], DEC);
+                           String("&light=") + String(packet[11], HEX) + String(packet[12], HEX) +
+                           String("&uvi=") + String(packet[13], HEX);
 
-      // Send to server through a HTTP POST request.
+      // Send data to server through HTTP POST
       client.println("POST /agrilog-server/insert-byte.php HTTP/1.1");
       client.println("Host: 192.168.1.2:8085");
       client.println("Connection: Keep-Alive");
@@ -132,15 +128,10 @@ void loop()
       client.println("Content-Length: " + String(queryString.length()));
       client.println(); // end HTTP header
       client.println(queryString);
-      for (int i = 0; i < packetSize + 1; i++) {
-        Serial.println(buffer[i], HEX);
-      }
-      Serial.println("Packet sent.");   
 
       Heltec.display->drawString(0, 48, "Packet sent.");
       Heltec.display->display();
-
-      delay(300000);
     }
   }
+  delay(300000);
 }
