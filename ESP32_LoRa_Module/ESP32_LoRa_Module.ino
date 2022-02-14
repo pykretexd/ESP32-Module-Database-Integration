@@ -80,14 +80,14 @@ void setup()
     Heltec.display->drawString(0, 0, "Connected to Wifi");
     Heltec.display->display();
     delay(1500);
-    
+
     Heltec.display->clear();
     Heltec.display->drawString(0, 0, "Waiting for incoming data...");
     Heltec.display->display();
-    
+
     LoRa.receive();
   }
-  
+
 }
 
 void loop()
@@ -95,11 +95,13 @@ void loop()
   Heltec.display->clear();
   Heltec.display->drawString(0, 0, "Loop start");
   Heltec.display->display();
-  
+
   packetSize = LoRa.parsePacket();
 
   // Packet received
   if (packetSize) {
+    Heltec.display->drawString(0, 10, "Looping ...");
+    Heltec.display->display();
     if (packetSize == 15) {
       Heltec.display->clear();
       rssi = "RSSI " + String(LoRa.packetRssi(), DEC);
@@ -120,23 +122,24 @@ void loop()
       // Connect to server
       if (client.connect(server, 8085))
       {
-        // Data to input
-        int rainfall = packet[6] + packet[7];
-        int light = packet[11] + packet[12];
+        // Data
+        int rainfall = packet[6] + packet[7]; // rainfall bytes
+        int light = packet[11] + packet[12]; // light bytes
+        int temperature = ((((((packet[8] & 0x0f) * 256) + packet[9]) - 400) / 10) - 32) / 1.8; // Formula to decode temperature bytes and convert to celsius
         String queryString = String("device=") + String(packet[0], HEX) +
                              String("&station_name=") + String(packet[2], HEX) +
                              String("&average_wind_speed=") + String(packet[3], DEC) +
                              String("&gust_wind_speed=") + String(packet[4], DEC) +
                              String("&wind_direction=") + String(packet[5], DEC) +
                              String("&rainfall=") + String(rainfall, DEC) +
-                             String("&temperature=") + String(packet[9], DEC) +
-                             String("&humidity=") + String(packet[10], HEX) +
+                             String("&temperature=") + String(temperature, DEC) +
+                             String("&humidity=") + String(packet[10], DEC) +
                              String("&light=") + String(light, DEC) +
                              String("&uvi=") + String(packet[13], DEC);
 
         // Send data to server through HTTP POST
-        client.println("POST /agrilog-server/insert-byte.php HTTP/1.1");
-        client.println("Host: 192.168.1.2:8085");
+        client.println("POST /agrilog-server/insert-byte.php HTTP/1.1"); // script path
+        client.println("Host: 192.168.1.2:8085"); // server IP + port
         client.println("Connection: Keep-Alive");
         client.println("Content-Type: application/x-www-form-urlencoded");
         client.println("Content-Length: " + String(queryString.length()));
@@ -144,14 +147,20 @@ void loop()
         client.println(queryString);
 
         Heltec.display->drawString(0, 48, "Packet sent.");
-        Heltec.display->display();  
+        Heltec.display->display();
+        delay(5000);
+        packetSize = 0;
+        packet.clear(); // Clear received packet
       }
-      delay(5000);
     } else {
+      // Irrelevant byte
       Heltec.display->clear();
       Heltec.display->drawString(0, 0, "Packet received.");
       Heltec.display->drawString(0, 10, "Less/more than 15 bytes.");
       Heltec.display->display();
+      delay(5000);
+      packetSize = 0;
+      packet.clear();
     }
   }
 }
