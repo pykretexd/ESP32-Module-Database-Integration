@@ -122,9 +122,6 @@ void loop()
       {
         // Data to input
         int rainfall = packet[6] + packet[7];
-        int tempBits = packet[8] & 0x0F;
-        int temperature = tempBits + packet[9];
-        Serial.println(temperature);
         int light = packet[11] + packet[12];
         String queryString = String("device=") + String(packet[0], HEX) +
                              String("&station_name=") + String(packet[2], HEX) +
