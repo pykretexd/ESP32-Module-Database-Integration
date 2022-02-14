@@ -32,7 +32,7 @@
                                                 $_REQUEST['uvi'],
                                                 $_REQUEST['station_name']));
 
-    rx_log($sql . $_REQUEST['station_name'] .
+    rx_log($sql . $_REQUEST['station_name'] . ", " .
                   $_REQUEST['average_wind_speed'] . ", " .
                   $_REQUEST['gust_wind_speed'] . ", " .
                   $_REQUEST['wind_direction'] . ", " .
