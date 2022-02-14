@@ -24,7 +24,7 @@ char server[] = "192.168.1.2";
 
 String rssi = "RSSI --";
 String packSize = "--";
-String packet;
+String packet ;
 
 int packetSize;
 
@@ -44,7 +44,11 @@ void setup()
   Heltec.display->init();
   Heltec.display->flipScreenVertically();
   Heltec.display->setFont(ArialMT_Plain_10);
+  logo();
+  delay(500);
+
   LoRa.setFrequency(433920000);
+  //LoRa.setSyncWord(0xF3);
   LoRa.setSyncWord(0x34);
   LoRa.setSpreadingFactor(7);
   LoRa.setCodingRate4(5);
@@ -75,63 +79,82 @@ void setup()
     Heltec.display->clear();
     Heltec.display->drawString(0, 0, "Connected to Wifi");
     Heltec.display->display();
+    delay(1500);
+    
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, "Waiting for incoming data...");
+    Heltec.display->display();
+    
+    LoRa.receive();
   }
-  Heltec.display->clear();
-  Heltec.display->drawString(0, 0, "Waiting for incoming data...");
-  Heltec.display->display();
   
-  LoRa.receive();
 }
 
 void loop()
 {
+  Heltec.display->clear();
+  Heltec.display->drawString(0, 0, "Loop start");
+  Heltec.display->display();
+  
   packetSize = LoRa.parsePacket();
 
   // Packet received
-  if (packetSize == 15) {
-    Heltec.display->clear();
-    rssi = "RSSI " + String(LoRa.packetRssi(), DEC);
-    Heltec.display->drawString(0, 0, rssi);
-    Heltec.display->drawString(0, 15, "Received packet:");
+  if (packetSize) {
+    if (packetSize == 15) {
+      Heltec.display->clear();
+      rssi = "RSSI " + String(LoRa.packetRssi(), DEC);
+      Heltec.display->drawString(0, 0, rssi);
+      Heltec.display->drawString(0, 15, "Received packet:");
 
-    // Display packet
-    for (int i = 0; i < packetSize; i++) {
-      packet += (char) LoRa.read();
-    }
-    for (int i = 0; i < 16; i++) {
-      Heltec.display->drawString(i * 6, 26, String(packet[i], HEX));
-      i++;
-    }
-    
-    Heltec.display->display();
+      // Display packet
+      for (int i = 0; i < packetSize; i++) {
+        packet += (char) LoRa.read();
+      }
+      for (int i = 0; i < 16; i++) {
+        Heltec.display->drawString(i * 6, 26, String(packet[i], HEX));
+        i++;
+      }
 
-    // Connect to server
-    if (client.connect(server, 8085))
-    {
-      // Data to input
-      String queryString = String("device=") + String(packet[0], HEX) +
-                           String("&station_name=") + String(packet[2], HEX) +
-                           String("&average_wind_speed=") + String(packet[3], DEC) +
-                           String("&gust_wind_speed=") + String(packet[4], DEC) +
-                           String("&wind_direction=") + String(packet[5], DEC) +
-                           String("&rainfall=") + String(packet[6], HEX) + String(packet[7], HEX) +
-                           String("&temperature=") + String(packet[9], DEC) +
-                           String("&humidity=") + String(packet[10], HEX) +
-                           String("&light=") + String(packet[11], HEX) + String(packet[12], HEX) +
-                           String("&uvi=") + String(packet[13], HEX);
+      Heltec.display->display();
 
-      // Send data to server through HTTP POST
-      client.println("POST /agrilog-server/insert-byte.php HTTP/1.1");
-      client.println("Host: 192.168.1.2:8085");
-      client.println("Connection: Keep-Alive");
-      client.println("Content-Type: application/x-www-form-urlencoded");
-      client.println("Content-Length: " + String(queryString.length()));
-      client.println(); // end HTTP header
-      client.println(queryString);
+      // Connect to server
+      if (client.connect(server, 8085))
+      {
+        // Data to input
+        int rainfall = packet[6] + packet[7];
+        int tempBits = packet[8] & 0x0F;
+        int temperature = tempBits + packet[9];
+        Serial.println(temperature);
+        int light = packet[11] + packet[12];
+        String queryString = String("device=") + String(packet[0], HEX) +
+                             String("&station_name=") + String(packet[2], HEX) +
+                             String("&average_wind_speed=") + String(packet[3], DEC) +
+                             String("&gust_wind_speed=") + String(packet[4], DEC) +
+                             String("&wind_direction=") + String(packet[5], DEC) +
+                             String("&rainfall=") + String(rainfall, DEC) +
+                             String("&temperature=") + String(packet[9], DEC) +
+                             String("&humidity=") + String(packet[10], HEX) +
+                             String("&light=") + String(light, DEC) +
+                             String("&uvi=") + String(packet[13], DEC);
 
-      Heltec.display->drawString(0, 48, "Packet sent.");
+        // Send data to server through HTTP POST
+        client.println("POST /agrilog-server/insert-byte.php HTTP/1.1");
+        client.println("Host: 192.168.1.2:8085");
+        client.println("Connection: Keep-Alive");
+        client.println("Content-Type: application/x-www-form-urlencoded");
+        client.println("Content-Length: " + String(queryString.length()));
+        client.println(); // end HTTP header
+        client.println(queryString);
+
+        Heltec.display->drawString(0, 48, "Packet sent.");
+        Heltec.display->display();  
+      }
+      delay(5000);
+    } else {
+      Heltec.display->clear();
+      Heltec.display->drawString(0, 0, "Packet received.");
+      Heltec.display->drawString(0, 10, "Less/more than 15 bytes.");
       Heltec.display->display();
     }
   }
-  delay(300000);
 }
