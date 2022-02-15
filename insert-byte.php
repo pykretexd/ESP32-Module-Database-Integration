@@ -20,9 +20,10 @@
     $method = $_SERVER['REQUEST_METHOD'];
     $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 
-    $sql = sprintf("INSERT INTO public.measurements (average_wind_speed, gust_wind_speed, wind_direction, rainfall, temperature, humidity, light, uvi, station_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);");
+    if ($_REQUEST['device'] == "d4") {
+        $sql = sprintf("INSERT INTO public.measurements (average_wind_speed, gust_wind_speed, wind_direction, rainfall, temperature, humidity, light, uvi, station_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);");
 
-    $result = pg_query_params($con, $sql, array($_REQUEST['average_wind_speed'],
+        $result = pg_query_params($con, $sql, array($_REQUEST['average_wind_speed'],
                                                 $_REQUEST['gust_wind_speed'],
                                                 $_REQUEST['wind_direction'],
                                                 $_REQUEST['rainfall'],
@@ -32,7 +33,7 @@
                                                 $_REQUEST['uvi'],
                                                 $_REQUEST['station_name']));
 
-    rx_log($sql . $_REQUEST['station_name'] . ", " .
+        rx_log($sql . $_REQUEST['station_name'] . ", " .
                   $_REQUEST['average_wind_speed'] . ", " .
                   $_REQUEST['gust_wind_speed'] . ", " .
                   $_REQUEST['wind_direction'] . ", " .
@@ -40,5 +41,5 @@
                   $_REQUEST['temperature'] . ", " .
                   $_REQUEST['humidity'] . ", " .
                   $_REQUEST['light'] . ", " .
-                  $_REQUEST['uvi'] . "(unrelated): " . $_REQUEST['device'] );
-?>
+                  $_REQUEST['uvi'] . "(unrelated): " . $_REQUEST['device'] );  
+    }
