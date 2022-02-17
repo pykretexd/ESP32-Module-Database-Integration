@@ -103,6 +103,7 @@ void loop()
   if (packetSize) {
     Heltec.display->drawString(0, 10, "Looping ...");
     Heltec.display->display();
+
     // If packet is 15 bytes
     if (packetSize == 15) {
       Heltec.display->clear();
@@ -124,10 +125,12 @@ void loop()
       // Connect to server
       if (client.connect(server, 8085))
       {
-        // Data
+        // Prepare data to input to database
         int rainfall = packet[6] + packet[7]; // rainfall bytes
         int light = packet[11] + packet[12]; // light bytes
         int temperature = ((((((packet[8] & 0x0f) * 256) + packet[9]) - 400) / 10) - 32) / 1.8; // Formula to decode temperature bytes and convert to celsius
+	
+	// Convert data to hexadecimal or decimal
         String queryString = String("device=") + String(packet[0], HEX) +
                              String("&station_name=") + String(packet[2], HEX) +
                              String("&average_wind_speed=") + String(packet[3], DEC) +
@@ -140,20 +143,22 @@ void loop()
                              String("&uvi=") + String(packet[13], DEC);
 
         // Send data to server through HTTP POST
-        client.println("POST /agrilog-server/insert-byte.php HTTP/1.1"); // script path
-        client.println("Host: 192.168.1.2:8085"); // server IP + port
+        client.println("POST /agrilog-server/insert-byte.php HTTP/1.1");     // PHP file path on server
+        client.println("Host: 192.168.1.2:8085");                            // Server IP and port number
         client.println("Connection: Keep-Alive");
-        client.println("Content-Type: application/x-www-form-urlencoded");
+        client.println("Content-Type: application/x-www-form-urlencoded");   // Content is URL encoded
         client.println("Content-Length: " + String(queryString.length()));
-        client.println(); // end HTTP header
+        client.println();                                                    // end HTTP header
         client.println(queryString);
 
 	// Packet successfully sent, display for 5 seconds then reset packet
         Heltec.display->drawString(0, 48, "Packet sent.");
         Heltec.display->display();
         delay(5000);
+
+	// Clear packet
         packetSize = 0;
-        packet.clear(); // Clear received packet
+        packet.clear();
       }
     } else {
       // Irrelevant byte
