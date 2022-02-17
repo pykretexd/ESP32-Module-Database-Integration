@@ -2,16 +2,12 @@
 #include "images.h"
 #include "WiFi.h"
 
-// Network SSID
 char ssid[] = "Agrilog";
-// Network Pass
 char pass[] = "12345678";
+char server[] = "192.168.1.2";
+int wifi_status = WL_IDLE_STATUS;
 
 char outputString[80];
-
-int wifi_status = WL_IDLE_STATUS;
-// IP-address or domain for target destination.
-char server[] = "192.168.1.2";
 
 #define BAND 433920000
 #define PABOOST false
@@ -25,7 +21,6 @@ char server[] = "192.168.1.2";
 String rssi = "RSSI --";
 String packSize = "--";
 String packet ;
-
 int packetSize;
 
 void logo() {
@@ -34,13 +29,11 @@ void logo() {
   Heltec.display->display();
 }
 
-// Initialize the client library
 WiFiClient client;
 
 void setup()
 {
-  // Initialize module
-  Heltec.begin(true /*DisplayEnable Enable*/, true /*Heltec.Heltec.Heltec.LoRa Disable*/, true /*Serial Enable*/, true /*PABOOST Enable*/, BAND /*long BAND*/);
+  Heltec.begin(true, true, true, true, BAND);
   Heltec.display->init();
   Heltec.display->flipScreenVertically();
   Heltec.display->setFont(ArialMT_Plain_10);
@@ -48,7 +41,6 @@ void setup()
   delay(500);
 
   LoRa.setFrequency(433920000);
-  //LoRa.setSyncWord(0xF3);
   LoRa.setSyncWord(0x34);
   LoRa.setSpreadingFactor(7);
   LoRa.setCodingRate4(5);
@@ -56,7 +48,6 @@ void setup()
   LoRa.setPreambleLength(6);
   LoRa.enableCrc();
 
-  // Attempt to connect to WiFi.
   while (wifi_status != WL_CONNECTED)
   {
     static int counter = 0;
@@ -68,7 +59,6 @@ void setup()
     delay(5000);
   }
 
-  // Check if connection failed.
   if (wifi_status != WL_CONNECTED)
   {
     Heltec.display->clear();
@@ -98,7 +88,6 @@ void loop()
 
   packetSize = LoRa.parsePacket();
 
-  // Packet received
   if (packetSize) {
     Heltec.display->drawString(0, 10, "Looping ...");
     Heltec.display->display();
@@ -108,7 +97,6 @@ void loop()
       Heltec.display->drawString(0, 0, rssi);
       Heltec.display->drawString(0, 15, "Received packet:");
 
-      // Display packet
       for (int i = 0; i < packetSize; i++) {
         packet += (char) LoRa.read();
       }
@@ -116,16 +104,14 @@ void loop()
         Heltec.display->drawString(i * 6, 26, String(packet[i], HEX));
         i++;
       }
-
       Heltec.display->display();
 
-      // Connect to server
       if (client.connect(server, 8085))
       {
         // Data
-        int rainfall = packet[6] + packet[7]; // rainfall bytes
-        int light = packet[11] + packet[12]; // light bytes
-        int temperature = ((((((packet[8] & 0x0f) * 256) + packet[9]) - 400) / 10) - 32) / 1.8; // Formula to decode temperature bytes and convert to celsius
+        int rainfall = packet[6] + packet[7];
+        int light = packet[11] + packet[12];
+        int temperature = ((((((packet[8] & 0x0f) * 256) + packet[9]) - 400) / 10) - 32) / 1.8;
         String queryString = String("device=") + String(packet[0], HEX) +
                              String("&station_name=") + String(packet[2], HEX) +
                              String("&average_wind_speed=") + String(packet[3], DEC) +
@@ -137,23 +123,21 @@ void loop()
                              String("&light=") + String(light, DEC) +
                              String("&uvi=") + String(packet[13], DEC);
 
-        // Send data to server through HTTP POST
-        client.println("POST /agrilog-server/insert-byte.php HTTP/1.1"); // script path
-        client.println("Host: 192.168.1.2:8085"); // server IP + port
+        client.println("POST /agrilog-server/insert-byte.php HTTP/1.1");
+        client.println("Host: 192.168.1.2:8085");
         client.println("Connection: Keep-Alive");
         client.println("Content-Type: application/x-www-form-urlencoded");
         client.println("Content-Length: " + String(queryString.length()));
-        client.println(); // end HTTP header
+        client.println();
         client.println(queryString);
 
         Heltec.display->drawString(0, 48, "Packet sent.");
         Heltec.display->display();
         delay(5000);
         packetSize = 0;
-        packet.clear(); // Clear received packet
+        packet.clear();
       }
     } else {
-      // Irrelevant byte
       Heltec.display->clear();
       Heltec.display->drawString(0, 0, "Packet received.");
       Heltec.display->drawString(0, 10, "Less/more than 15 bytes.");
