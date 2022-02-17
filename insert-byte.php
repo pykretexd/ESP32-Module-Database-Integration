@@ -29,14 +29,14 @@
 
         // Parameterized query to avoid SQLi
         $result = pg_query_params($con, $sql, array($_REQUEST['average_wind_speed'],
-                                                $_REQUEST['gust_wind_speed'],
-                                                $_REQUEST['wind_direction'],
-                                                $_REQUEST['rainfall'],
-                                                $_REQUEST['temperature'],
-                                                $_REQUEST['humidity'],
-                                                $_REQUEST['light'],
-                                                $_REQUEST['uvi'],
-                                                $_REQUEST['station_name']));
+                                                    $_REQUEST['gust_wind_speed'],
+                                                    $_REQUEST['wind_direction'],
+                                                    $_REQUEST['rainfall'],
+                                                    $_REQUEST['temperature'],
+                                                    $_REQUEST['humidity'],
+                                                    $_REQUEST['light'],
+                                                    $_REQUEST['uvi'],
+                                                    $_REQUEST['station_name']));
 
         // Log results
         rx_log($sql . $_REQUEST['station_name'] . ", " .
