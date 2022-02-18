@@ -1,3 +1,4 @@
+"id","average_wind_speed","gust_wind_speed","wind_direction","rainfall","temperature","humidity","light","uvi","station_name","timestamp"
 289,0,0,71,36,21,30,39,0,b4,2022-02-14 13:43:33.20922+01
 290,0,0,71,36,21,30,39,0,b4,2022-02-14 13:49:09.214998+01
 291,0,0,71,36,21,30,39,0,b4,2022-02-14 13:49:25.17005+01
