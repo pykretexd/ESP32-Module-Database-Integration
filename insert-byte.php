@@ -36,5 +36,5 @@
                                                     $_REQUEST['humidity'],
                                                     $_REQUEST['light'],
                                                     $_REQUEST['uvi'],
-                                                    $_REQUEST['station_name']))
+                                                    $_REQUEST['station_name']));
     }
