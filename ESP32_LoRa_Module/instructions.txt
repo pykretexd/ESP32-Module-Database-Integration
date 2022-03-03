@@ -130,8 +130,7 @@ void loop()
         int gust = (packet[2] & 0x03 >> 1) + packet[4]; // Extract the third bit in packet[2] and add packet[4] to get gust wind speed
         int windDirection = (packet[2] & 0x07 >> 2) + packet[5]; // Extract the fourth bit in packet[2] and add packet[5] to get wind direction.
         int rainfall = packet[6] + packet[7];
-        int light = (packet[8] >> 4 & 0x01) + (packet[8] >> 3 & 0x03) + packet[11] + packet[12]; // Extract the third and fourth bit in packet[8] and add light bytes to get the 
-												    light measurement
+        int light = (packet[8] >> 4 & 0x01) + (packet[8] >> 3 & 0x03) + packet[11] + packet[12]; // Extract the third and fourth bit in packet[8] and add light bytes to get the light measurement
         int temperature = ((((((packet[8] & 0x0f) * 256) + packet[9]) - 400) / 10) - 32) / 1.8; // Formula to decode temperature measurement and convert to celsius
         int stationName = (packet[1] & 0x0f) + (packet[2] & 0xf0); // Extract and add the lower part of packet[1] and upper part of packet[2] together
 	
