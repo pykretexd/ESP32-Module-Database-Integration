@@ -108,7 +108,6 @@ void loop()
 
       if (client.connect(server, 8085))
       {
-        // Data
         int avg = (packet[2] & 0x01) + packet[3];
         int gust = (packet[2] & 0x03 >> 1) + packet[4];
         int windDirection = (packet[2] & 0x07 >> 2) + packet[5];
