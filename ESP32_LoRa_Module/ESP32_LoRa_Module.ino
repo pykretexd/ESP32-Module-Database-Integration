@@ -109,14 +109,18 @@ void loop()
       if (client.connect(server, 8085))
       {
         // Data
+        int avg = (packet[2] & 0x01) + packet[3];
+        int gust = (packet[2] & 0x03 >> 1) + packet[4];
+        int windDirection = (packet[2] & 0x07 >> 2) + packet[5];
         int rainfall = packet[6] + packet[7];
-        int light = packet[11] + packet[12];
+        int light = (packet[8] >> 4 & 0x01) + (packet[8] >> 3 & 0x03) + packet[11] + packet[12];
         int temperature = ((((((packet[8] & 0x0f) * 256) + packet[9]) - 400) / 10) - 32) / 1.8;
+        int stationName = (packet[1] & 0x0f) + (packet[2] & 0xf0);
         String queryString = String("device=") + String(packet[0], HEX) +
-                             String("&station_name=") + String(packet[2], HEX) +
-                             String("&average_wind_speed=") + String(packet[3], DEC) +
-                             String("&gust_wind_speed=") + String(packet[4], DEC) +
-                             String("&wind_direction=") + String(packet[5], DEC) +
+                             String("&station_name=") + String(stationName, HEX) +
+                             String("&average_wind_speed=") + String(avg, DEC) +
+                             String("&gust_wind_speed=") + String(gust, DEC) +
+                             String("&wind_direction=") + String(windDirection, DEC) +
                              String("&rainfall=") + String(rainfall, DEC) +
                              String("&temperature=") + String(temperature, DEC) +
                              String("&humidity=") + String(packet[10], DEC) +
