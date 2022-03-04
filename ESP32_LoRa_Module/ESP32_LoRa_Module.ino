@@ -23,12 +23,6 @@ String packSize = "--";
 String packet ;
 int packetSize;
 
-void logo() {
-  Heltec.display->clear();
-  Heltec.display->drawXbm(0, 5, logo_width, logo_height, logo_bits);
-  Heltec.display->display();
-}
-
 WiFiClient client;
 
 void setup()
@@ -37,8 +31,6 @@ void setup()
   Heltec.display->init();
   Heltec.display->flipScreenVertically();
   Heltec.display->setFont(ArialMT_Plain_10);
-  logo();
-  delay(500);
 
   LoRa.setFrequency(433920000);
   LoRa.setSyncWord(0x34);
@@ -83,14 +75,17 @@ void setup()
 void loop()
 {
   Heltec.display->clear();
-  Heltec.display->drawString(0, 0, "Loop start");
+  Heltec.display->drawString(0, 0, "Looking for packets...");
   Heltec.display->display();
 
   packetSize = LoRa.parsePacket();
 
   if (packetSize) {
-    Heltec.display->drawString(0, 10, "Looping ...");
+    Heltec.display->drawString(0, 10, "Packet found.");
     Heltec.display->display();
+
+    delay(1000);
+    
     if (packetSize == 15) {
       Heltec.display->clear();
       rssi = "RSSI " + String(LoRa.packetRssi(), DEC);
@@ -100,10 +95,12 @@ void loop()
       for (int i = 0; i < packetSize; i++) {
         packet += (char) LoRa.read();
       }
+      
       for (int i = 0; i < 16; i++) {
         Heltec.display->drawString(i * 6, 26, String(packet[i], HEX));
         i++;
       }
+      
       Heltec.display->display();
 
       if (client.connect(server, 8085))
@@ -115,6 +112,7 @@ void loop()
         int light = (packet[8] >> 4 & 0x01) + (packet[8] >> 3 & 0x03) + packet[11] + packet[12];
         int temperature = ((((((packet[8] & 0x0f) * 256) + packet[9]) - 400) / 10) - 32) / 1.8;
         int stationName = (packet[1] & 0x0f) + (packet[2] & 0xf0);
+        
         String queryString = String("device=") + String(packet[0], HEX) +
                              String("&station_name=") + String(stationName, HEX) +
                              String("&average_wind_speed=") + String(avg, DEC) +
@@ -136,7 +134,9 @@ void loop()
 
         Heltec.display->drawString(0, 48, "Packet sent.");
         Heltec.display->display();
+        
         delay(5000);
+        
         packetSize = 0;
         packet.clear();
       }
@@ -144,8 +144,11 @@ void loop()
       Heltec.display->clear();
       Heltec.display->drawString(0, 0, "Packet received.");
       Heltec.display->drawString(0, 10, "Less/more than 15 bytes.");
+      Heltec.display->drawString(0, 20, "Dismissing...");
       Heltec.display->display();
+      
       delay(5000);
+      
       packetSize = 0;
       packet.clear();
     }
