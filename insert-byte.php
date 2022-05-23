@@ -1,10 +1,10 @@
 <?php 
     // Connect to database
-    $db_host = "127.0.0.1";
-    $db_name = "agrilog";
-    $db_port = "5432";
-    $db_user = "postgres";
-    $db_pass = "ntig123!";
+    $db_host = $_ENV["HOST"];
+    $db_name = $_ENV["NAME"];
+    $db_port = $_ENV["PORT"];
+    $db_user = $_ENV["USER"];
+    $db_pass = $_ENV["PASSWORD"];
 
     $con = pg_connect("hostaddr=$db_host port=$db_port dbname=$db_name user=$db_user password=$db_pass");
     if (!$con)
